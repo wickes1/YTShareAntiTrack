@@ -28,75 +28,78 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 (function () {
+  // How fast we should check for element changes (ms)
+  const updateInterval = 1000;
 
-	// How fast we should check for element changes (ms)
-	const updateInterval = 50
+  // Parameters which are allowed to stay in the URL
+  const allowedParams = [
+    "t", // start time
+    "list", // playlist ID
+    "v" // video ID
+  ];
 
-	// Parameters which are allowed to stay in the URL
-	const allowedParams = [
-		"t", // start time
-		"list", // playlist ID
-		"v" // video ID
-	]
+  // Identifiers for all elements to target
+  const elementIdentifiers = {
+    id: [
+      "share-url" // Input field on desktop
+    ],
+    class: [
+      "unified-share-url-input" // Input field on mobile
+    ]
+  };
 
-	// Identifiers for all elements to target
-	const elementIdentifiers = {
-		id: [
-			'share-url' // Input field on desktop
-		],
-		class: [
-			'unified-share-url-input' // Input field on mobile
-		]
-	}
+  // Element has been found, update URL
+  function handleTargetElement(targetElement) {
+    // Set up a copy of the current URL to work on
+    const url = new URL(targetElement.value);
 
-	// Element has been found, update URL
-	function handleTargetElement(targetElement) {
+    if (url.hostname == "www.youtube.com") return;
 
-		// Set up a copy of the current URL to work on
-		let url = new URL(targetElement.value)
-		let params = url.searchParams
+    // Extract the video ID from the pathname
+    const videoId = url.pathname.substring(1);
 
-		// Remove all parameters that are not allowed
-		for (let param of params.keys()) {
-			if (!allowedParams.includes(param)) {
-				params.delete(param)
-			}
-		}
+    // Create a new URL with the desired base URL
+    const watchUrl = new URL("https://www.youtube.com/watch");
 
-		url.search = params
+    // Add allowed parameters from the original URL to the watch URL
+    for (const param of allowedParams) {
+      if (url.searchParams.has(param)) {
+        watchUrl.searchParams.set(param, url.searchParams.get(param));
+      }
+    }
 
-		let newValue = url.toString()
+    // Set the video ID as the "v" parameter
+    watchUrl.searchParams.set("v", videoId);
 
-		// Abort if everything is already correct
-		if (targetElement.value == newValue) return;
+    console.log(
+      "[YTShareAntiTrack] Changing share url from " +
+        targetElement.value +
+        " to " +
+        watchUrl
+    );
 
-		console.log('[YTShareAntiTrack] Changing share url from ' + targetElement.value + ' to ' + newValue)
+    // Update element
+    targetElement.value = watchUrl;
+  }
 
-		// Update element
-		targetElement.value = newValue
-	}
+  // Repeatedly look for the element, and if it's there, change it
+  setInterval(() => {
+    // Gather all elements which should be modified based on their ID
+    for (let identifier of elementIdentifiers.id) {
+      const element = document.getElementById(identifier);
+      if (element) {
+        handleTargetElement(element);
+      }
+    }
 
-	// Repeatedly look for the element, and if it's there, change it
-	setInterval(() => {
-
-		// Gather all elements which should be modified based on their ID
-		for (let identifier of elementIdentifiers.id) {
-			const element = document.getElementById(identifier)
-			if (element) {
-				handleTargetElement(element)
-			}
-		}
-
-		// Gather all elements which should be modified based on their class
-		for (let identifier of elementIdentifiers.class) {
-			const elements = document.getElementsByClassName(identifier)
-			if(elements){
-				for(let element of elements) {
-					handleTargetElement(element)
-				}
-			}
-		}
-
-	}, updateInterval)
-
+    // Gather all elements which should be modified based on their class
+    for (let identifier of elementIdentifiers.class) {
+      const elements = document.getElementsByClassName(identifier);
+      if (elements) {
+        for (let element of elements) {
+          handleTargetElement(element);
+        }
+      }
+    }
+  }, updateInterval);
 })();

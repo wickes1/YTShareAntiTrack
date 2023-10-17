@@ -1,5 +1,17 @@
-# YTShareAntiTrack
-YouTube userscript to remove tracking parameters from share URLs
+# Forked YTShareAntiTrack
+
+This repository is a fork of the [GitHub - Xenorio/YTShareAntiTrack: YouTube userscript to remove tracking parameters from share URLs](https://github.com/Xenorio/YTShareAntiTrack). The original project is designed to remove tracking parameters from YouTube share URLs. This fork includes additional changes, which are detailed below.
+
+## Changes
+
+- Replace share url hostname from "youtu.be" to "www.youtube.com" for easier resolving.
+- Increased check interval from 50 miliseconds to 1 second.
+
+Example log output:
+
+```log
+[YTShareAntiTrack] Changing share url from https://youtu.be/abcde?si=12345 to https://www.youtube.com/watch?v=abcde
+```
 
 ## Explanation
 
