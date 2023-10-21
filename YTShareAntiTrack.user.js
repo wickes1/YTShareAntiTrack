@@ -55,21 +55,27 @@
 
     if (url.hostname == "www.youtube.com") return;
 
-    // Extract the video ID from the pathname
-    const videoId = url.pathname.substring(1);
+    const paths = url.pathname.split("/").slice(1);
 
-    // Create a new URL with the desired base URL
-    const watchUrl = new URL("https://www.youtube.com/watch");
-
-    // Add allowed parameters from the original URL to the watch URL
-    for (const param of allowedParams) {
-      if (url.searchParams.has(param)) {
-        watchUrl.searchParams.set(param, url.searchParams.get(param));
+    let videoId;
+    let watchUrl;
+    // Short video
+    if (paths.length > 1) {
+      videoId = paths[1];
+      watchUrl = new URL(`https://www.youtube.com/shorts/${videoId}`);
+    } else {
+      videoId = paths[0];
+      watchUrl = new URL("https://www.youtube.com/watch");
+      // Add allowed parameters from the original URL to the watch URL
+      for (const param of allowedParams) {
+        if (url.searchParams.has(param)) {
+          watchUrl.searchParams.set(param, url.searchParams.get(param));
+        }
       }
-    }
 
-    // Set the video ID as the "v" parameter
-    watchUrl.searchParams.set("v", videoId);
+      // Set the video ID as the "v" parameter
+      watchUrl.searchParams.set("v", videoId);
+    }
 
     console.log(
       "[YTShareAntiTrack] Changing share url from " +
